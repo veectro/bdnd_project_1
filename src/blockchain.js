@@ -102,7 +102,8 @@ class Blockchain {
      */
     requestMessageOwnershipVerification(address) {
         return new Promise((resolve) => {
-            
+            let message = `${address}:${new Date().getTime().toString().slice(0,-3)}:starRegistry`;
+            resolve(message);
         });
     }
 
@@ -193,6 +194,19 @@ class Blockchain {
         let self = this;
         let stars = [];
         return new Promise((resolve, reject) => {
+            try{
+                self.chain.forEach((b) => {
+                    let data = b.getBData();
+                    if(data){
+                        if(data.owner === address){
+                            stars.push(data);
+                        }
+                    }
+                });
+                resolve(stars);
+            } catch (e){
+                reject(e);
+            }
 
         });
     }
