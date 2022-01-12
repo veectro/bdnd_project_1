@@ -69,11 +69,7 @@ class Blockchain {
                 block.height = self.height + 1;
 
                 // setup the previous block hash, genesis block will have previous block hash as null
-                if (self.height === -1) {
-                    block.previousBlockHash = '0';
-                } else {
-                    block.previousBlockHash = self.chain[self.height].hash;
-                }
+                block.previousBlockHash = (self.height === -1) ? '0': self.chain[self.height].hash;
 
                 // setup the timestamp of the block
                 block.timestamp = new Date().getTime().toString().slice(0, -3);
@@ -90,7 +86,7 @@ class Blockchain {
                 resolve(block);
             } catch (e) {
                 console.error(e.message)
-                reject(block);
+                reject(new Error(e.message));
             }
 
         });
@@ -130,6 +126,26 @@ class Blockchain {
     submitStar(address, message, signature, star) {
         let self = this;
         return new Promise(async (resolve, reject) => {
+            //1. Get the time from the message sent as a parameter example: `parseInt(message.split(':')[1])`
+            let messageSendTime = parseInt(message.split(':')[1]);
+
+            //2. Get the current time: `let currentTime = parseInt(new Date().getTime().toString().slice(0, -3));`
+            let currentTime = parseInt(new Date().getTime().toString().slice(0, -3));
+
+            //3. Check if the time elapsed is less than 5 minutes
+            if (currentTime - messageSendTime < 300) {
+                //4. Verify the message with wallet address and signature: `bitcoinMessage.verify(message, address, signature)`
+                if (bitcoinMessage.verify(message, address, signature)) {
+                    //5. Create the block and add it to the chain
+                    let block = new Block(star);
+                    await self._addBlock(block);
+                    resolve(block);
+                } else {
+                    reject(new Error('Message verification failed'));
+                }
+            } else {
+                reject(new Error('Message is expired'));
+            }
         });
     }
 
@@ -143,6 +159,10 @@ class Blockchain {
         let self = this;
         return new Promise((resolve, reject) => {
 
+            // Search on the chain array for the block that has the hash.
+            let block = self.chain.find(block => block.hash === hash);
+
+            (block) ? resolve(block) : reject(new Error('Block not found'));
         });
     }
 
@@ -187,7 +207,8 @@ class Blockchain {
         let self = this;
         let errorLog = [];
         return new Promise(async (resolve, reject) => {
-
+            // 1. You should validate each block using `validateBlock`
+            // 2. Each Block should check the with the previousBlockHash
         });
     }
 
