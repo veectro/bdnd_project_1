@@ -139,7 +139,11 @@ class Blockchain {
                 //4. Verify the message with wallet address and signature: `bitcoinMessage.verify(message, address, signature)`
                 if (bitcoinMessage.verify(message, address, signature)) {
                     //5. Create the block and add it to the chain
-                    let block = new BlockClass.Block(star);
+                    let data = {
+                        address: address,
+                        star: star
+                    }
+                    let block = new BlockClass.Block(data);
                     await self._addBlock(block);
                     await this.validateChain();
                     resolve(block);
@@ -200,7 +204,7 @@ class Blockchain {
                 self.chain.forEach((b) => {
                     let data = b.getBData();
                     if (data) {
-                        if (data.owner === address) {
+                        if (data.address === address) {
                             stars.push(data);
                         }
                     }
