@@ -37,7 +37,12 @@ class Blockchain {
         if (this.height === -1) {
             let block = new BlockClass.Block({data: 'Genesis Block'});
             await this._addBlock(block);
-            await this.validateChain();
+            let errors = await this.validateChain();
+            if (errors.length === 0) {
+                console.log('Validated !')
+            } else {
+                console.error('Is not valid!')
+            }
         }
     }
 
@@ -145,8 +150,12 @@ class Blockchain {
                     }
                     let block = new BlockClass.Block(data);
                     await self._addBlock(block);
-                    await this.validateChain();
-                    resolve(block);
+                    let errors = await this.validateChain();
+                    if (errors.length === 0) {
+                        resolve(block);
+                    } else {
+                        reject('Invalid chain..');
+                    }
                 } else {
                     reject('Message verification failed');
                 }
